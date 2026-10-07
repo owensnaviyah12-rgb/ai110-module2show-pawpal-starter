@@ -1,3 +1,5 @@
+"""PawPal+ logic layer: core classes for pets, tasks, owners, and scheduling."""
+
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional
