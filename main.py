@@ -1,84 +1,36 @@
-"""PawPal+ logic layer: core classes for pets, tasks, owners, and scheduling."""
-
-from dataclasses import dataclass, field
+from pawpal_system import Owner, Pet, Task, Scheduler
 from datetime import date
-from typing import Optional
 
+# Create an owner
+owner = Owner("Naviyah")
 
-@dataclass
-class Task:
-    """A single pet care activity."""
+# Create two pets
+bella = Pet("Bella", "Dog")
+milo = Pet("Milo", "Cat")
 
-    description: str
-    time: str  # "HH:MM" (zero-padded, 24-hour)
-    frequency: str = "once"  # "once", "daily", or "weekly"
-    due_date: date = field(default_factory=date.today)
-    completed: bool = False
-    pet_name: str = ""
+# Add pets to owner
+owner.add_pet(bella)
+owner.add_pet(milo)
 
-    def mark_complete(self) -> None:
-        """Mark this task as completed."""
-        self.completed = True
+# Create three tasks with different times
+task1 = Task("Feed Bella", "08:00", due_date=date.today())
+task2 = Task("Walk Bella", "10:00", due_date=date.today())
+task3 = Task("Feed Milo", "18:00", due_date=date.today())
 
+# Add tasks to pets
+bella.add_task(task1)
+bella.add_task(task2)
+milo.add_task(task3)
 
-@dataclass
-class Pet:
-    """A pet and the care tasks assigned to it."""
+# Create the scheduler
+scheduler = Scheduler(owner)
 
-    name: str
-    species: str
-    tasks: list[Task] = field(default_factory=list)
+# Get today's schedule
+schedule = scheduler.get_todays_schedule()
 
-    def add_task(self, task: Task) -> None:
-        """Add a task to this pet and tag it with the pet's name."""
-        task.pet_name = self.name
-        self.tasks.append(task)
+# Print today's schedule
+print("Today's Schedule")
+print("----------------")
 
-    def get_tasks(self) -> list[Task]:
-        """Return all tasks for this pet."""
-        return self.tasks
-
-
-class Owner:
-    """A pet owner who manages one or more pets."""
-
-    def __init__(self, name: str) -> None:
-        self.name: str = name
-        self.pets: list[Pet] = []
-
-    def add_pet(self, pet: Pet) -> None:
-        """Add a pet to this owner."""
-        self.pets.append(pet)
-
-    def get_all_tasks(self) -> list[Task]:
-        """Return every task across all of this owner's pets."""
-        return [task for pet in self.pets for task in pet.get_tasks()]
-
-
-class Scheduler:
-    """The 'brain' that organizes tasks across all of an owner's pets."""
-
-    def __init__(self, owner: Owner) -> None:
-        self.owner: Owner = owner
-
-    def get_todays_schedule(self) -> list[Task]:
-        """Return today's tasks, sorted by time."""
-        today = date.today()
-        todays = [t for t in self.owner.get_all_tasks() if t.due_date == today]
-        return self.sort_by_time(todays)
-
-    def sort_by_time(self, tasks: list[Task]) -> list[Task]:
-        """Return the given tasks sorted by their HH:MM time."""
-        return sorted(tasks, key=lambda t: t.time)
-
-    def filter_tasks(
-        self,
-        pet_name: Optional[str] = None,
-        completed: Optional[bool] = None,
-    ) -> list[Task]:
-        """Return tasks filtered by pet name and/or completion status."""
-        pass
-
-    def detect_conflicts(self) -> list[str]:
-        """Return warning messages for tasks scheduled at the same time."""
-        pass
+for task in schedule:
+    print(f"{task.time} - {task.pet_name}: {task.description}")
