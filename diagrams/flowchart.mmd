@@ -1,0 +1,48 @@
+flowchart TD
+    A([Start PawPal+]) --> B[Open Streamlit App]
+
+    B --> C{Owner exists in session?}
+    C -- No --> D[Create Owner object]
+    C -- Yes --> E[Load Owner from session state]
+
+    D --> F[Display Pet Information]
+    E --> F
+
+    F --> G{Add a Pet?}
+    G -- Yes --> H[Create Pet object]
+    H --> I[Add Pet to Owner]
+    I --> F
+    G -- No --> J{Add a Task?}
+
+    J -- Yes --> K[Enter Task Details]
+    K --> L[Create Task object]
+    L --> M[Add Task to Pet]
+    M --> N[Generate Today's Schedule]
+
+    J -- No --> N
+
+    N --> O[Find Tasks Due Today]
+    O --> P[Sort Tasks by Time]
+    P --> Q[Filter Tasks if Needed]
+    Q --> R{Scheduling Conflict?}
+
+    R -- Yes --> S[Display Conflict Warning]
+    R -- No --> T[Display Daily Schedule]
+
+    S --> T
+    T --> U{Recurring Task Completed?}
+
+    U -- Yes --> V{Frequency}
+    V -- Daily --> W[Create Task for Next Day]
+    V -- Weekly --> X[Create Task for Next Week]
+    V -- Once --> Y[No New Task]
+
+    U -- No --> Z[Continue Managing Tasks]
+
+    W --> Z
+    X --> Z
+    Y --> Z
+
+    Z --> AA([End])
+
+    fclassDiagram
