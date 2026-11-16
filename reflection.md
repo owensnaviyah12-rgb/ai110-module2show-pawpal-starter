@@ -7,15 +7,17 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
-My initial UML design included four main classes: Owner, Pet, Task, and Scheduler. The Owner class manages the user's pets, while the Pet class stores information about each pet and its tasks. The Task class represents individual care activities, including the description, time, frequency, due date, and completion status. The Scheduler manages the tasks by sorting, filtering, finding today's schedule, and detecting conflicts.
+My initial UML design included four main classes: Owner, Pet, Task, and Scheduler. The Owner class manages the user's pets, while the Pet class stores information about each pet and its tasks. The Task class represents individual care activities, including the description, time, frequency, due date, and completion status. The Scheduler manages the tasks by sorting, filtering, finding today's schedule, and detecting conflicts.The final UML (diagrams/uml.mmd, Mermaid source) keeps those four classes and adds a small PlanItem class that holds one slot of a daily plan. It shows Owner → Pet(s), Pet → Task(s), Scheduler → Owner, and I checked that every attribute and method in it exists in pawpal_system.py.
 
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
-The design changed slightly during implementation. I added the pet_name attribute to the Task class so that tasks could be connected to the correct pet when displayed or filtered. I also added recurring-task logic to mark_complete() so daily and weekly tasks can create a new task for their next occurrence. These changes made the system easier to organize and better matched the scheduling features required for PawPal+.
+The design changed during implementation. I added the pet_name attribute to the Task class so that tasks could be connected to the correct pet when displayed or filtered. I also added recurring-task logic to mark_complete() so daily and weekly tasks can create a new task for their next occurrence.
+Later changes came from fixing problems I found when reviewing my own code:
 
+Pet.complete_task() now adds the next recurring task automatically. Before, mark_complete() returned the new task but nothing stored it, so the owner had to add it by hand.Tasks gained duration_minutes and priority. Conflicts used to mean "same start time", which misses a 08:00-08:30 walk overlapping an 08:15 play session, so conflicts are now based on time blocks. Durations also made the next-available-slot and daily-plan features possible.Tasks, pets and owners validate their input (bad times, unknown priority, duplicate pet names, tasks running past midnight) and can save/load themselves as JSON.
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
@@ -25,14 +27,14 @@ The design changed slightly during implementation. I added the pet_name attribut
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
-The scheduler considers task time, due date, pet, completion status, and task frequency. Time was the most important constraint because the main purpose of PawPal+ is to help owners organize their pet-care activities in the correct order. Due dates and recurring schedules were also important because they determine when tasks should appear.
+The scheduler considers task time, duration, priority, due date, pet, completion status, and task frequency. Time is still the most important constraint because the main purpose of PawPal+ is to help owners organize their pet-care activities in the correct order. Priority decides who wins when two tasks want the same time (medicine and feeding should beat grooming). Due dates and recurring schedules determine when tasks appear.
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
-One tradeoff is that the scheduler detects conflicts when tasks have the exact same time, but it does not automatically decide which task is more important. This keeps the system simple and allows the pet owner to decide which activity should happen first. This is reasonable because different pets and tasks may have different priorities that the program cannot always determine automatically.
+My first version only detected conflicts and left the decision to the owner. The daily plan now decides for them: it is greedy, placing high-priority tasks first and shifting lower-priority tasks to the next free gap. The tradeoff is that this is simple and predictable but not optimal: it can move more tasks than a smarter arrangement would, and it never splits or reorders a task around the owner's own preferences. That is reasonable for a daily pet-care plan because the rules are easy to explain ("important things keep their time"), and the plain conflict warnings are still shown so the owner can override the suggestion.
 ---
 
 ## 3. AI Collaboration
