@@ -1,5 +1,5 @@
-__pycache__/
 .venv/
-.venv_new/
+__pycache__/
 .pytest_cache/
-.DS_Store
+data.json
+demo_data.json
