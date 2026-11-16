@@ -399,4 +399,3 @@ class Scheduler:
 
         placed.sort(key=lambda item: to_minutes(item.start))
         return placed + unplaced
-        return conflicts
